@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AED Cognitive Monitoring Platform</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --primary: #2a78d6;
+      --danger: #e34948;
+      --success: #0ca30c;
+      --warning: #fab219;
+      --text-primary: #0b0b0b;
+      --text-secondary: #666;
+      --border: #e0e0e0;
+      --surface-0: #f5f5f5;
+      --surface-1: #f9f9f9;
+      --surface-2: #ffffff;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --border: #333;
+        --surface-0: #1a1a1a;
+        --surface-1: #242424;
+        --surface-2: #2d2d2d;
+      }
+    }
+    
+    html, body { height: 100%; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      background: var(--surface-0);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    
+    .container { 
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem; 
+      background: var(--surface-0);
+    }
+    
+    .header { 
+      margin-bottom: 2rem; 
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .header h1 { 
+      font-size: 28px; 
+      font-weight: 700; 
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .header p { 
+      font-size: 14px; 
+      color: var(--text-secondary);
+    }
+    
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+      gap: 12px; 
+      margin-bottom: 2rem; 
+    }
+    
+    .metric-card { 
+      background: var(--surface-2); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .metric-label { 
+      font-size: 12px; 
+      color: var(--text-secondary); 
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .metric-value { 
+      font-size: 28px; 
+      font-weight: 700; 
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .metric-delta { 
+      font-size: 12px; 
+      color: var(--text-secondary);
+    }
+    
+    .tabs { 
+      display: flex; 
+      gap: 8px; 
+      margin-bottom: 2rem; 
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    
+    .tab { 
+      padding: 12px 16px; 
+      font-size: 14px; 
+      font-weight: 500;
+      cursor: pointer; 
+      color: var(--text-secondary); 
+      border: none; 
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .tab:hover {
+      color: var(--text-primary);
+    }
+    
+    .tab.active { 
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    
+    .panel { 
+      display: none;
+    }
+    
+    .panel.active { 
+      display: block;
+    }
+    
+    .card { 
+      background: var(--surface-2); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 1.5rem; 
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .card-title { 
+      font-size: 18px; 
+      font-weight: 600; 
+      margin-bottom: 1.5rem; 
+      color: var(--text-primary);
+    }
+    
+    .form-group { 
+      margin-bottom: 16px; 
+    }
+    
+    .form-label { 
+      font-size: 13px; 
+      font-weight: 600; 
+      color: var(--text-primary); 
+      display: block; 
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    input, select, textarea { 
+      width: 100%; 
+      padding: 10px 12px; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-family: inherit;
+      background: var(--surface-2);
+      color: var(--text-primary);
+      transition: all 0.2s;
+    }
+    
+    input:focus, select:focus, textarea:focus { 
+      outline: none; 
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(42, 120, 214, 0.1);
+    }
+    
+    .btn { 
+      padding: 10px 16px; 
+      font-size: 14px; 
+      font-weight: 600;
+      border: 1px solid var(--border); 
+      background: var(--surface-1); 
+      color: var(--text-primary); 
+      border-radius: 8px; 
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover { 
+      background: var(--surface-2);
+      border-color: var(--text-secondary);
+    }
+    
+    .btn-primary { 
+      background: var(--primary); 
+      color: white; 
+      border-color: var(--primary);
+    }
+    
+    .btn-primary:hover { 
+      background: #1e5bb8;
+      border-color: #1e5bb8;
+    }
+    
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      border-color: var(--danger);
+    }
+    
+    .btn-danger:hover {
+      background: #c73131;
+      border-color: #c73131;
+    }
+    
+    .risk-badge { 
+      display: inline-block; 
+      padding: 6px 12px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .risk-high { 
+      background: rgba(227, 73, 72, 0.1); 
+      color: var(--danger);
+    }
+    
+    .risk-moderate { 
+      background: rgba(250, 178, 25, 0.1); 
+      color: var(--warning);
+    }
+    
+    .risk-low { 
+      background: rgba(12, 163, 12, 0.1); 
+      color: var(--success);
+    }
+    
+    .medication-item { 
+      padding: 12px; 
+      background: var(--surface-1); 
+      border-radius: 8px; 
+      margin-bottom: 8px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-start;
+      border: 1px solid var(--border);
+    }
+    
+    .med-info { 
+      flex: 1; 
+    }
+    
+    .med-name { 
+      font-weight: 600; 
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .med-dose { 
+      font-size: 12px; 
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    
+    .med-cognitive { 
+      font-size: 11px; 
+      padding: 4px 8px; 
+      background: rgba(42, 120, 214, 0.1); 
+      color: var(--primary); 
+      border-radius: 4px; 
+      width: fit-content;
+      font-weight: 600;
+    }
+    
+    .chart-wrapper { 
+      background: var(--surface-2); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .chart-container { 
+      position: relative; 
+      height: 350px; 
+      margin-bottom: 1rem; 
+    }
+    
+    .assessment-row { 
+      padding: 12px; 
+      border-bottom: 1px solid var(--border); 
+      display: grid; 
+      grid-template-columns: 100px repeat(5, 1fr); 
+      gap: 8px; 
+      align-items: center;
+    }
+    
+    .assessment-row:last-child { 
+      border-bottom: none; 
+    }
+    
+    .assessment-date { 
+      font-weight: 600; 
+      font-size: 13px;
+    }
+    
+    .assessment-score { 
+      text-align: center; 
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .recommendation {
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary);
+      background: rgba(42, 120, 214, 0.05);
+    }
+    
+    .recommendation.warning {
+      border-left-color: var(--warning);
+      background: rgba(250, 178, 25, 0.05);
+    }
+    
+    .recommendation.success {
+      border-left-color: var(--success);
+      background: rgba(12, 163, 12, 0.05);
+    }
+    
+    .slider-container {
+      display: grid;
+      grid-template-columns: 1fr 50px;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      padding: 0;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--border);
+      border-radius: 3px;
+      outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2px solid var(--surface-2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2px solid var(--surface-2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧠 AED Cognitive Monitoring</h1>
+      <p>Track cognitive function and predict medication side effects based on personalized AI analysis</p>
+    </div>
+    
+    <div class="grid">
+      <div class="metric-card">
+        <div class="metric-label">Overall Cognitive</div>
+        <div class="metric-value" id="overallScore">82</div>
+        <div class="metric-delta">Stable</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Decline Risk</div>
+        <div class="metric-value" id="riskScore">25%</div>
+        <div class="metric-delta"><span class="risk-badge risk-low">Low</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Medications</div>
+        <div class="metric-value" id="medCount">2</div>
+        <div class="metric-delta">Monotherapy</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Last Assessment</div>
+        <div class="metric-value">5d</div>
+        <div class="metric-delta">Up to date</div>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
+      <button class="tab" onclick="switchTab('assessments', this)">➕ New Assessment</button>
+      <button class="tab" onclick="switchTab('medications', this)">💊 Medications</button>
+      <button class="tab" onclick="switchTab('history', this)">📈 History</button>
+    </div>
+    
+    <!-- Dashboard Panel -->
+    <div id="dashboard" class="panel active">
+      <div class="chart-wrapper">
+        <div class="card-title">Cognitive Trend (Last 12 Weeks)</div>
+        <div class="chart-container">
+          <canvas id="trendChart" role="img" aria-label="Cognitive function trend over 12 weeks">Cognitive domains over time</canvas>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Personalized Recommendations</div>
+        <div id="recommendationsContainer"></div>
+      </div>
+    </div>
+    
+    <!-- Assessment Panel -->
+    <div id="assessments" class="panel">
+      <div class="card">
+        <div class="card-title">Add Cognitive Assessment</div>
+        <div class="form-group">
+          <label class="form-label">Assessment Date</label>
+          <input type="date" id="assessDate">
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Memory Score</label>
+            <div class="slider-container">
+              <input type="range" min="0" max="100" value="80" id="memoryScore">
+              <span id="memoryDisplay">80</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attention Score</label>
+            <div class="slider-container">
+              <input type="range" min="0" max="100" value="78" id="attentionScore">
+              <span id="attentionDisplay">78</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Processing Speed</label>
+            <div class="slider-container">
+              <input type="range" min="0" max="100" value="82" id="processingScore">
+              <span id="processingDisplay">82</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Language Fluency</label>
+            <div class="slider-container">
+              <input type="range" min="0" max="100" value="85" id="languageScore">
+              <span id="languageDisplay">85</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Executive Function</label>
+            <div class="slider-container">
+              <input type="range" min="0" max="100" value="80" id="executiveScore">
+              <span id="executiveDisplay">80</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea id="assessNotes" placeholder="Any observations about cognitive performance..." style="height: 100px;"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveAssessment()">💾 Save Assessment & Analyze</button>
+      </div>
+    </div>
+    
+    <!-- Medications Panel -->
+    <div id="medications" class="panel">
+      <div class="card">
+        <div class="card-title">Current Medications</div>
+        <div id="medsList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Add New Medication</div>
+        <div class="form-group">
+          <label class="form-label">AED Medication</label>
+          <select id="drugSelect">
+            <option value="">Select medication...</option>
+            <option value="lamotrigine">Lamotrigine - Minimal cognitive impact</option>
+            <option value="levetiracetam">Levetiracetam - Minimal cognitive impact</option>
+            <option value="lacosamide">Lacosamide - Minimal cognitive impact</option>
+            <option value="carbamazepine">Carbamazepine - Moderate impact</option>
+            <option value="oxcarbazepine">Oxcarbazepine - Moderate impact</option>
+            <option value="topiramate">Topiramate - High cognitive impact ⚠️</option>
+            <option value="phenobarbital">Phenobarbital - Very high impact ⚠️</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dosage (mg)</label>
+          <input type="number" id="dosage" placeholder="e.g., 500">
+        </div>
+        <button class="btn btn-primary" onclick="addMedication()">➕ Add Medication</button>
+      </div>
+    </div>
+    
+    <!-- History Panel -->
+    <div id="history" class="panel">
+      <div class="card">
+        <div class="card-title">Assessment History</div>
+        <div style="overflow-x: auto;">
+          <div style="font-weight: 600; font-size: 12px; color: var(--text-secondary); padding: 12px; background: var(--surface-1); display: grid; grid-template-columns: 100px repeat(5, 1fr); gap: 8px; border-radius: 8px 8px 0 0;">
+            <div>Date</div>
+            <div style="text-align: center;">Memory</div>
+            <div style="text-align: center;">Attention</div>
+            <div style="text-align: center;">Speed</div>
+            <div style="text-align: center;">Language</div>
+            <div style="text-align: center;">Executive</div>
+          </div>
+          <div id="historyTable"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>Built with research data from your paper: "The Effects of Antiepileptic Drugs on Cognitive Function"</p>
+      <p>Data saved locally in your browser • Not a medical device • Consult your healthcare provider</p>
+    </div>
+  </div>
+
+  <script>
+    const storageKey = 'aedCognitiveData';
+    let chartInstance = null;
+    
+    let data = {
+      medications: [
+        { name: 'Levetiracetam', dose: 500, cognitiveScore: 2 },
+        { name: 'Lamotrigine', dose: 100, cognitiveScore: 2 }
+      ],
+      assessments: [
+        { date: '2024-01-01', memory: 85, attention: 80, speed: 82, language: 88, executive: 83 },
+        { date: '2024-01-08', memory: 83, attention: 78, speed: 81, language: 86, executive: 82 },
+        { date: '2024-01-15', memory: 82, attention: 77, speed: 80, language: 85, executive: 81 },
+        { date: '2024-01-22', memory: 80, attention: 75, speed: 79, language: 84, executive: 80 },
+        { date: '2024-01-29', memory: 82, attention: 78, speed: 80, language: 85, executive: 82 }
+      ]
+    };
+
+    function loadData() {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) data = JSON.parse(saved);
+      renderUI();
+    }
+
+    function saveData() {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    function switchTab(tab, element) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      element.classList.add('active');
+      if (tab === 'dashboard') {
+        setTimeout(drawChart, 100);
+      }
+    }
+
+    function drawChart() {
+      const ctx = document.getElementById('trendChart')?.getContext('2d');
+      if (!ctx) return;
+      
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+      
+      const labels = data.assessments.map(a => new Date(a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { 
+              label: 'Memory', 
+              data: data.assessments.map(a => a.memory), 
+              borderColor: '#3266ad', 
+              backgroundColor: 'rgba(50, 102, 173, 0.05)', 
+              borderWidth: 3, 
+              tension: 0.3, 
+              pointRadius: 5,
+              pointBackgroundColor: '#3266ad',
+              pointBorderColor: 'white',
+              pointBorderWidth: 2
+            },
+            { 
+              label: 'Attention', 
+              data: data.assessments.map(a => a.attention), 
+              borderColor: '#eb6834', 
+              backgroundColor: 'rgba(235, 104, 52, 0.05)', 
+              borderWidth: 3, 
+              tension: 0.3, 
+              pointRadius: 5,
+              pointBackgroundColor: '#eb6834',
+              pointBorderColor: 'white',
+              pointBorderWidth: 2
+            },
+            { 
+              label: 'Language', 
+              data: data.assessments.map(a => a.language), 
+              borderColor: '#1baf7a', 
+              backgroundColor: 'rgba(27, 175, 122, 0.05)', 
+              borderWidth: 3, 
+              tension: 0.3, 
+              pointRadius: 5,
+              pointBackgroundColor: '#1baf7a',
+              pointBorderColor: 'white',
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              display: true, 
+              position: 'top',
+              labels: { font: { size: 13, weight: 600 } }
+            }
+          },
+          scales: {
+            y: { 
+              min: 0, 
+              max: 100,
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function addMedication() {
+      const drug = document.getElementById('drugSelect').value;
+      const dose = document.getElementById('dosage').value;
+      if (!drug || !dose) {
+        alert('Please select medication and dosage');
+        return;
+      }
+      
+      const drugs = {
+        'lamotrigine': { name: 'Lamotrigine', score: 2 },
+        'levetiracetam': { name: 'Levetiracetam', score: 2 },
+        'lacosamide': { name: 'Lacosamide', score: 2 },
+        'carbamazepine': { name: 'Carbamazepine', score: 6 },
+        'oxcarbazepine': { name: 'Oxcarbazepine', score: 5 },
+        'topiramate': { name: 'Topiramate', score: 7.5 },
+        'phenobarbital': { name: 'Phenobarbital', score: 8.5 }
+      };
+      
+      data.medications.push({ 
+        name: drugs[drug].name, 
+        dose: parseInt(dose), 
+        cognitiveScore: drugs[drug].score 
+      });
+      saveData();
+      renderUI();
+      document.getElementById('drugSelect').value = '';
+      document.getElementById('dosage').value = '';
+      alert('✅ Medication added! Your cognitive risk has been updated.');
+    }
+
+    function removeMed(name) {
+      data.medications = data.medications.filter(m => m.name !== name);
+      saveData();
+      renderUI();
+    }
+
+    function saveAssessment() {
+      const date = document.getElementById('assessDate').value || new Date().toISOString().split('T')[0];
+      const memory = parseInt(document.getElementById('memoryScore').value);
+      const attention = parseInt(document.getElementById('attentionScore').value);
+      const speed = parseInt(document.getElementById('processingScore').value);
+      const language = parseInt(document.getElementById('languageScore').value);
+      const executive = parseInt(document.getElementById('executiveScore').value);
+      
+      data.assessments.push({ date, memory, attention, speed, language, executive });
+      data.assessments.sort((a, b) => new Date(a.date) - new Date(b.date));
+      saveData();
+      renderUI();
+      
+      alert('✅ Assessment saved! Your cognitive profile and risk score have been updated.');
+      document.getElementById('assessNotes').value = '';
+    }
+
+    function calculateRisk() {
+      const lastAssess = data.assessments[data.assessments.length - 1];
+      const attention = lastAssess ? lastAssess.attention : 80;
+      
+      const isPolytherapy = data.medications.length > 1;
+      const avgCognitiveImpact = data.medications.length > 0
+        ? data.medications.reduce((sum, m) => sum + m.cognitiveScore, 0) / data.medications.length
+        : 0;
+      
+      let risk = (100 - attention) * 0.6 + avgCognitiveImpact * 4;
+      if (isPolytherapy) risk += 20;
+      
+      risk = Math.min(Math.max(risk, 0), 100);
+      return { 
+        risk: Math.round(risk), 
+        level: risk > 60 ? 'high' : risk > 30 ? 'moderate' : 'low'
+      };
+    }
+
+    function generateRecommendations() {
+      const riskData = calculateRisk();
+      const lastAssess = data.assessments[data.assessments.length - 1];
+      const isPolytherapy = data.medications.length > 1;
+      
+      const recommendations = [];
+      
+      if (riskData.level === 'low') {
+        recommendations.push({
+          type: 'success',
+          text: '✓ <strong>Continue current regimen:</strong> Your cognitive scores are stable and risk is low.'
+        });
+      } else if (riskData.level === 'moderate') {
+        recommendations.push({
+          type: 'warning',
+          text: '→ <strong>Monitor closely:</strong> Moderate risk detected. Increase assessment frequency to bi-weekly.'
+        });
+      } else {
+        recommendations.push({
+          type: 'warning',
+          text: '⚠️ <strong>High risk detected:</strong> Consider consulting with your neurologist about medication adjustments.'
+        });
+      }
+      
+      if (lastAssess && lastAssess.attention < 70) {
+        recommendations.push({
+          type: 'warning',
+          text: '→ <strong>Attention decline:</strong> Low attention scores detected. This is common with certain AEDs.'
+        });
+      }
+      
+      if (isPolytherapy) {
+        recommendations.push({
+          type: 'warning',
+          text: '→ <strong>Polytherapy effect:</strong> Multiple medications increase cognitive burden by 2-4x (Quon et al. 2020).'
+        });
+      }
+      
+      if (data.medications.some(m => m.cognitiveScore > 7)) {
+        recommendations.push({
+          type: 'warning',
+          text: '→ <strong>High-impact drug detected:</strong> Consider discussing alternative medications with your clinician.'
+        });
+      }
+      
+      if (recommendations.length === 0) {
+        recommendations.push({
+          type: 'success',
+          text: '✓ <strong>All systems normal:</strong> Continue current approach and maintain regular monitoring.'
+        });
+      }
+      
+      return recommendations;
+    }
+
+    function renderUI() {
+      const lastAssess = data.assessments[data.assessments.length - 1];
+      const overall = lastAssess 
+        ? Math.round((lastAssess.memory + lastAssess.attention + lastAssess.speed + lastAssess.language + lastAssess.executive) / 5) 
+        : 82;
+      
+      document.getElementById('overallScore').textContent = overall;
+      document.getElementById('medCount').textContent = data.medications.length;
+      
+      const riskData = calculateRisk();
+      document.getElementById('riskScore').textContent = riskData.risk + '%';
+      const riskBadge = document.querySelector('#medCount').parentElement.querySelector('.risk-badge') || document.createElement('span');
+      riskBadge.className = `risk-badge risk-${riskData.level}`;
+      riskBadge.textContent = riskData.level.toUpperCase();
+      
+      // Medications list
+      const medsList = document.getElementById('medsList');
+      if (data.medications.length === 0) {
+        medsList.innerHTML = '<p style="color: var(--text-secondary);">No medications added yet. Add your first AED to get started.</p>';
+      } else {
+        medsList.innerHTML = data.medications.map(m => `
+          <div class="medication-item">
+            <div class="med-info">
+              <div class="med-name">${m.name}</div>
+              <div class="med-dose">${m.dose}mg</div>
+              <div class="med-cognitive">Cognitive impact: ${m.cognitiveScore}/10</div>
+            </div>
+            <button class="btn btn-danger" onclick="removeMed('${m.name}')">Remove</button>
+          </div>
+        `).join('');
+      }
+      
+      // History table
+      const historyTable = document.getElementById('historyTable');
+      if (data.assessments.length === 0) {
+        historyTable.innerHTML = '<p style="color: var(--text-secondary); padding: 20px;">No assessments yet. Create your first assessment above.</p>';
+      } else {
+        historyTable.innerHTML = data.assessments.map(a => `
+          <div class="assessment-row">
+            <div class="assessment-date">${new Date(a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+            <div class="assessment-score">${a.memory}</div>
+            <div class="assessment-score">${a.attention}</div>
+            <div class="assessment-score">${a.speed}</div>
+            <div class="assessment-score">${a.language}</div>
+            <div class="assessment-score">${a.executive}</div>
+          </div>
+        `).join('');
+      }
+      
+      // Recommendations
+      const recsContainer = document.getElementById('recommendationsContainer');
+      const recommendations = generateRecommendations();
+      recsContainer.innerHTML = recommendations.map(rec => `
+        <div class="recommendation ${rec.type}">
+          ${rec.text}
+        </div>
+      `).join('');
+      
+      // Set today's date
+      if (!document.getElementById('assessDate').value) {
+        document.getElementById('assessDate').valueAsDate = new Date();
+      }
+    }
+
+    // Event listeners for sliders
+    ['memory', 'attention', 'processing', 'language', 'executive'].forEach(field => {
+      const el = document.getElementById(field + 'Score');
+      if (el) {
+        el.addEventListener('input', (e) => {
+          document.getElementById(field + 'Display').textContent = e.target.value;
+        });
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

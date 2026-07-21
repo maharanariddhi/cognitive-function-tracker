@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AED Cognitive Monitoring Platform</title>
+  <title>Cognitive Function Tracker</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -390,6 +390,160 @@
       gap: 16px;
     }
     
+
+
+    .helper-text {
+      margin-top: -10px;
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .medical-history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .medical-history-grid textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .section-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .status-message {
+      min-height: 20px;
+      color: var(--success);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .medical-history-summary {
+      display: grid;
+      gap: 12px;
+    }
+
+    .history-summary-item {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-1);
+    }
+
+    .history-summary-label {
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .history-summary-value {
+      color: var(--text-primary);
+      font-size: 14px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .privacy-note {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(42, 120, 214, 0.06);
+      border-left: 4px solid var(--primary);
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+
+    .hidden { display: none !important; }
+
+    .onboarding-page {
+      min-height: 100vh;
+      padding: 32px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top left, rgba(42, 120, 214, 0.14), transparent 36%),
+        var(--surface-0);
+    }
+
+    .onboarding-card {
+      width: min(920px, 100%);
+      margin: 24px auto;
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface-2);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.10);
+    }
+
+    .onboarding-card h1 {
+      margin-bottom: 8px;
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.2;
+    }
+
+    .onboarding-card .lead {
+      margin-bottom: 24px;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .onboarding-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .onboarding-section h2 {
+      margin-bottom: 12px;
+      font-size: 17px;
+    }
+
+    .required-note {
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .intake-error {
+      min-height: 22px;
+      margin-top: 10px;
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .chart-empty-state {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 32px;
+      text-align: center;
+      color: var(--text-secondary);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      background: var(--surface-1);
+    }
+
+    .chart-empty-state strong {
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
     .footer {
       text-align: center;
       margin-top: 3rem;
@@ -401,32 +555,121 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <section id="onboardingPage" class="onboarding-page">
+    <div class="onboarding-card">
+      <h1>🧠 Set up the Cognitive Function Tracker</h1>
+      <p class="lead">Start by entering the patient profile and relevant medical history. Required fields are marked with an asterisk. This information stays in this browser unless you clear its storage.</p>
+
+      <form id="onboardingForm" onsubmit="saveOnboarding(event)">
+        <div class="onboarding-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+          <h2>Patient profile</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="intakePatientName">Full Name *</label>
+              <input type="text" id="intakePatientName" autocomplete="name" required placeholder="Patient's full name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeAge">Age *</label>
+              <input type="number" id="intakeAge" min="1" max="120" required placeholder="Age in years">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeDob">Date of Birth</label>
+              <input type="date" id="intakeDob">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeSex">Sex / Gender</label>
+              <input type="text" id="intakeSex" placeholder="Optional">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeBloodType">Blood Type</label>
+              <input type="text" id="intakeBloodType" placeholder="e.g., O+">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeEmergencyContact">Emergency Contact</label>
+              <input type="text" id="intakeEmergencyContact" placeholder="Name and phone number">
+            </div>
+          </div>
+        </div>
+
+        <div class="onboarding-section">
+          <h2>Reason for tracking</h2>
+          <div class="medical-history-grid">
+            <div class="form-group">
+              <label class="form-label" for="intakePrimaryConcern">Primary Cognitive or Neurological Concern</label>
+              <textarea id="intakePrimaryConcern" placeholder="What changes or symptoms are being monitored?"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeNeurologicalHistory">Neurological History</label>
+              <textarea id="intakeNeurologicalHistory" placeholder="Seizures, stroke/TIA, head injury, dementia, movement symptoms, or other relevant history..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="onboarding-section">
+          <h2>Medical history</h2>
+          <div class="medical-history-grid">
+            <div class="form-group">
+              <label class="form-label" for="intakeConditions">Diagnoses and Current Conditions</label>
+              <textarea id="intakeConditions" placeholder="Chronic conditions and approximate start dates..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeCurrentMedications">Current Medications</label>
+              <textarea id="intakeCurrentMedications" placeholder="Medication names, doses, and frequency if known..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeAllergies">Allergies and Reactions</label>
+              <textarea id="intakeAllergies" placeholder="Medication, food, or environmental allergies..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeHospitalizations">Surgeries, Hospitalizations, and Major Events</label>
+              <textarea id="intakeHospitalizations" placeholder="Important procedures, admissions, injuries, or major medical events..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeFamilyHistory">Family Medical History</label>
+              <textarea id="intakeFamilyHistory" placeholder="Relevant neurological, cognitive, cardiac, or other family history..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="intakeLifestyle">Lifestyle and Daily Function</label>
+              <textarea id="intakeLifestyle" placeholder="Sleep, diet, exercise, tobacco/alcohol, living situation, and daily independence..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="submit" class="btn btn-primary">Start Tracking →</button>
+          <span class="required-note">You can edit these details later under Medical History.</span>
+        </div>
+        <div id="intakeError" class="intake-error" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <div class="container hidden" id="appShell">
     <div class="header">
-      <h1>🧠 AED Cognitive Monitoring</h1>
-      <p>Track cognitive function and predict medication side effects based on personalized AI analysis</p>
+      <h1>🧠 Cognitive Function Tracker</h1>
+      <p>Track cognitive health, medications, assessments, and medical history in one private dashboard</p>
     </div>
     
     <div class="grid">
       <div class="metric-card">
         <div class="metric-label">Overall Cognitive</div>
-        <div class="metric-value" id="overallScore">82</div>
-        <div class="metric-delta">Stable</div>
+        <div class="metric-value" id="overallScore">—</div>
+        <div class="metric-delta" id="overallDelta">No assessment yet</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Decline Risk</div>
-        <div class="metric-value" id="riskScore">25%</div>
-        <div class="metric-delta"><span class="risk-badge risk-low">Low</span></div>
+        <div class="metric-value" id="riskScore">—</div>
+        <div class="metric-delta"><span class="risk-badge risk-low" id="riskBadge">Not assessed</span></div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Active Medications</div>
-        <div class="metric-value" id="medCount">2</div>
-        <div class="metric-delta">Monotherapy</div>
+        <div class="metric-value" id="medCount">0</div>
+        <div class="metric-delta" id="medDelta">None added</div>
       </div>
       <div class="metric-card">
         <div class="metric-label">Last Assessment</div>
-        <div class="metric-value">5d</div>
-        <div class="metric-delta">Up to date</div>
+        <div class="metric-value" id="lastAssessmentValue">None</div>
+        <div class="metric-delta" id="lastAssessmentDelta">Add your first assessment</div>
       </div>
     </div>
     
@@ -434,15 +677,20 @@
       <button class="tab active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
       <button class="tab" onclick="switchTab('assessments', this)">➕ New Assessment</button>
       <button class="tab" onclick="switchTab('medications', this)">💊 Medications</button>
-      <button class="tab" onclick="switchTab('history', this)">📈 History</button>
+      <button class="tab" onclick="switchTab('medical-history', this)">🩺 Medical History</button>
+      <button class="tab" onclick="switchTab('history', this)">📈 Assessment History</button>
     </div>
     
     <!-- Dashboard Panel -->
     <div id="dashboard" class="panel active">
       <div class="chart-wrapper">
-        <div class="card-title">Cognitive Trend (Last 12 Weeks)</div>
+        <div class="card-title">Cognitive Trend (Saved Assessments)</div>
         <div class="chart-container">
-          <canvas id="trendChart" role="img" aria-label="Cognitive function trend over 12 weeks">Cognitive domains over time</canvas>
+          <div id="chartEmptyState" class="chart-empty-state">
+            <strong>No assessments yet</strong>
+            <span>The graph will add one set of points each time you save an assessment.</span>
+          </div>
+          <canvas id="trendChart" class="hidden" role="img" aria-label="Cognitive function trend from saved assessments">Cognitive domains over time</canvas>
         </div>
       </div>
       
@@ -536,6 +784,106 @@
       </div>
     </div>
     
+
+
+    <!-- Medical History Panel -->
+    <div id="medical-history" class="panel">
+      <div class="card">
+        <div class="card-title">Patient Medical History</div>
+        <p class="helper-text">Type the patient’s medical history below. The information is saved only in this browser.</p>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="historyPatientName">Patient Name</label>
+            <input type="text" id="historyPatientName" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyAge">Age</label>
+            <input type="number" id="historyAge" min="1" max="120" placeholder="Age in years">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyDob">Date of Birth</label>
+            <input type="date" id="historyDob">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historySex">Sex / Gender</label>
+            <input type="text" id="historySex" placeholder="Optional">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyBloodType">Blood Type</label>
+            <input type="text" id="historyBloodType" placeholder="e.g., O+">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyEmergencyContact">Emergency Contact</label>
+            <input type="text" id="historyEmergencyContact" placeholder="Name and phone number">
+          </div>
+        </div>
+
+        <div class="medical-history-grid">
+          <div class="form-group">
+            <label class="form-label" for="historyPrimaryConcern">Primary Cognitive or Neurological Concern</label>
+            <textarea id="historyPrimaryConcern" placeholder="What symptoms or changes are being monitored?"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyNeurologicalHistory">Neurological History</label>
+            <textarea id="historyNeurologicalHistory" placeholder="Seizures, stroke/TIA, head injury, dementia, movement symptoms, or other relevant history..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyConditions">Diagnoses and Current Conditions</label>
+            <textarea id="historyConditions" placeholder="List diagnoses, chronic conditions, and when they began..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyAllergies">Allergies and Reactions</label>
+            <textarea id="historyAllergies" placeholder="Medication, food, or environmental allergies and reactions..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historySurgeries">Surgeries and Procedures</label>
+            <textarea id="historySurgeries" placeholder="Procedure, approximate date, and outcome..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyHospitalizations">Hospitalizations and Major Events</label>
+            <textarea id="historyHospitalizations" placeholder="Hospital stays, seizures, injuries, strokes, or other major events..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyCurrentMedications">Current Medications</label>
+            <textarea id="historyCurrentMedications" placeholder="Current medications, doses, and frequency if known..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyPastMedications">Past Medications</label>
+            <textarea id="historyPastMedications" placeholder="Previous medications, doses if known, and why they were stopped..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyFamilyHistory">Family Medical History</label>
+            <textarea id="historyFamilyHistory" placeholder="Relevant conditions among parents, siblings, or children..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyLifestyle">Lifestyle and Social History</label>
+            <textarea id="historyLifestyle" placeholder="Diet, exercise, sleep, tobacco, alcohol, occupation, and living situation..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="historyNotes">Other Medical Notes</label>
+            <textarea id="historyNotes" placeholder="Anything else important for a clinician to know..."></textarea>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button class="btn btn-primary" onclick="saveMedicalHistory()">💾 Save Medical History</button>
+          <button class="btn" onclick="copyMedicalHistory()">📋 Copy Summary</button>
+          <button class="btn btn-danger" onclick="clearMedicalHistory()">Clear</button>
+          <span class="status-message" id="medicalHistoryStatus" aria-live="polite"></span>
+        </div>
+
+        <div class="privacy-note">
+          Privacy reminder: this prototype stores data in the current browser using local storage. Avoid entering sensitive information on a shared or public computer.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Medical History Summary</div>
+        <div id="medicalHistorySummary" class="medical-history-summary"></div>
+      </div>
+    </div>
+
     <!-- History Panel -->
     <div id="history" class="panel">
       <div class="card">
@@ -556,32 +904,190 @@
     
     <div class="footer">
       <p>Built with research data from your paper: "The Effects of Antiepileptic Drugs on Cognitive Function"</p>
-      <p>Data saved locally in your browser • Not a medical device • Consult your healthcare provider</p>
+      <p>Data saved locally in your browser • Prototype only • Not a medical device • Consult your healthcare provider</p>
     </div>
   </div>
 
   <script>
-    const storageKey = 'aedCognitiveData';
+    const storageKey = 'aedCognitiveDataV3';
+    const legacyStorageKeys = ['aedCognitiveData', 'aedCognitiveDataV2'];
     let chartInstance = null;
+
+    function defaultMedicalHistory() {
+      return {
+        patientName: '',
+        age: '',
+        dob: '',
+        sex: '',
+        bloodType: '',
+        emergencyContact: '',
+        primaryConcern: '',
+        neurologicalHistory: '',
+        conditions: '',
+        allergies: '',
+        surgeries: '',
+        hospitalizations: '',
+        currentMedications: '',
+        pastMedications: '',
+        familyHistory: '',
+        lifestyle: '',
+        notes: ''
+      };
+    }
+
+    function defaultData() {
+      return {
+        version: 3,
+        onboardingComplete: false,
+        medicalHistory: defaultMedicalHistory(),
+        medications: [],
+        assessments: []
+      };
+    }
     
-    let data = {
-      medications: [
-        { name: 'Levetiracetam', dose: 500, cognitiveScore: 2 },
-        { name: 'Lamotrigine', dose: 100, cognitiveScore: 2 }
-      ],
-      assessments: [
-        { date: '2024-01-01', memory: 85, attention: 80, speed: 82, language: 88, executive: 83 },
-        { date: '2024-01-08', memory: 83, attention: 78, speed: 81, language: 86, executive: 82 },
-        { date: '2024-01-15', memory: 82, attention: 77, speed: 80, language: 85, executive: 81 },
-        { date: '2024-01-22', memory: 80, attention: 75, speed: 79, language: 84, executive: 80 },
-        { date: '2024-01-29', memory: 82, attention: 78, speed: 80, language: 85, executive: 82 }
-      ]
-    };
+    let data = defaultData();
+
+    function isLegacySampleAssessments(assessments) {
+      const legacyDates = ['2024-01-01', '2024-01-08', '2024-01-15', '2024-01-22', '2024-01-29'];
+      return Array.isArray(assessments)
+        && assessments.length === legacyDates.length
+        && assessments.every((assessment, index) => assessment.date === legacyDates[index]);
+    }
+
+    function isLegacySampleMedications(medications) {
+      return Array.isArray(medications)
+        && medications.length === 2
+        && medications.some(med => med.name === 'Levetiracetam' && Number(med.dose) === 500)
+        && medications.some(med => med.name === 'Lamotrigine' && Number(med.dose) === 100);
+    }
 
     function loadData() {
       const saved = localStorage.getItem(storageKey);
-      if (saved) data = JSON.parse(saved);
+
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          data = { ...defaultData(), ...parsed };
+        } catch (error) {
+          data = defaultData();
+        }
+      } else {
+        // Earlier versions shipped with demonstration assessments. Preserve the
+        // patient's intake information, but deliberately start assessment history
+        // empty so the graph only reflects assessments submitted by this user.
+        let legacyData = null;
+        for (const key of legacyStorageKeys) {
+          const legacySaved = localStorage.getItem(key);
+          if (!legacySaved) continue;
+          try {
+            legacyData = JSON.parse(legacySaved);
+            break;
+          } catch (error) {
+            legacyData = null;
+          }
+        }
+
+        data = defaultData();
+        if (legacyData) {
+          data.medicalHistory = {
+            ...defaultMedicalHistory(),
+            ...(legacyData.medicalHistory || {})
+          };
+          data.onboardingComplete = Boolean(legacyData.onboardingComplete);
+          data.medications = Array.isArray(legacyData.medications)
+            && !isLegacySampleMedications(legacyData.medications)
+            ? legacyData.medications
+            : [];
+        }
+
+        // Never migrate assessments from a prototype version.
+        data.assessments = [];
+      }
+
+      data.medicalHistory = { ...defaultMedicalHistory(), ...(data.medicalHistory || {}) };
+      data.medications = Array.isArray(data.medications) ? data.medications : [];
+      data.assessments = Array.isArray(data.assessments) ? data.assessments : [];
+      data.version = 3;
+      saveData();
+
+      populateOnboardingForm();
+      if (data.onboardingComplete) {
+        showApplication();
+      } else {
+        showOnboarding();
+      }
+    }
+
+    function showOnboarding() {
+      document.getElementById('onboardingPage').classList.remove('hidden');
+      document.getElementById('appShell').classList.add('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function showApplication() {
+      document.getElementById('onboardingPage').classList.add('hidden');
+      document.getElementById('appShell').classList.remove('hidden');
       renderUI();
+      setTimeout(drawChart, 100);
+      window.scrollTo(0, 0);
+    }
+
+    function populateOnboardingForm() {
+      const history = { ...defaultMedicalHistory(), ...(data.medicalHistory || {}) };
+      const mapping = {
+        intakePatientName: 'patientName',
+        intakeAge: 'age',
+        intakeDob: 'dob',
+        intakeSex: 'sex',
+        intakeBloodType: 'bloodType',
+        intakeEmergencyContact: 'emergencyContact',
+        intakePrimaryConcern: 'primaryConcern',
+        intakeNeurologicalHistory: 'neurologicalHistory',
+        intakeConditions: 'conditions',
+        intakeCurrentMedications: 'currentMedications',
+        intakeAllergies: 'allergies',
+        intakeHospitalizations: 'hospitalizations',
+        intakeFamilyHistory: 'familyHistory',
+        intakeLifestyle: 'lifestyle'
+      };
+      Object.entries(mapping).forEach(([id, key]) => {
+        const field = document.getElementById(id);
+        if (field) field.value = history[key] || '';
+      });
+    }
+
+    function saveOnboarding(event) {
+      event.preventDefault();
+      const name = document.getElementById('intakePatientName').value.trim();
+      const age = document.getElementById('intakeAge').value.trim();
+      const error = document.getElementById('intakeError');
+
+      if (!name || !age || Number(age) < 1 || Number(age) > 120) {
+        error.textContent = 'Please enter a valid patient name and age.';
+        return;
+      }
+
+      error.textContent = '';
+      data.medicalHistory = {
+        ...data.medicalHistory,
+        patientName: name,
+        age,
+        dob: document.getElementById('intakeDob').value,
+        sex: document.getElementById('intakeSex').value.trim(),
+        bloodType: document.getElementById('intakeBloodType').value.trim(),
+        emergencyContact: document.getElementById('intakeEmergencyContact').value.trim(),
+        primaryConcern: document.getElementById('intakePrimaryConcern').value.trim(),
+        neurologicalHistory: document.getElementById('intakeNeurologicalHistory').value.trim(),
+        conditions: document.getElementById('intakeConditions').value.trim(),
+        currentMedications: document.getElementById('intakeCurrentMedications').value.trim(),
+        allergies: document.getElementById('intakeAllergies').value.trim(),
+        hospitalizations: document.getElementById('intakeHospitalizations').value.trim(),
+        familyHistory: document.getElementById('intakeFamilyHistory').value.trim(),
+        lifestyle: document.getElementById('intakeLifestyle').value.trim()
+      };
+      data.onboardingComplete = true;
+      saveData();
+      showApplication();
     }
 
     function saveData() {
@@ -599,77 +1105,84 @@
     }
 
     function drawChart() {
-      const ctx = document.getElementById('trendChart')?.getContext('2d');
+      const canvas = document.getElementById('trendChart');
+      const emptyState = document.getElementById('chartEmptyState');
+      const ctx = canvas?.getContext('2d');
       if (!ctx) return;
-      
+
       if (chartInstance) {
         chartInstance.destroy();
+        chartInstance = null;
       }
-      
-      const labels = data.assessments.map(a => new Date(a.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-      
+
+      if (!data.assessments.length) {
+        canvas.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      canvas.classList.remove('hidden');
+
+      const dateCounts = data.assessments.reduce((counts, assessment) => {
+        counts[assessment.date] = (counts[assessment.date] || 0) + 1;
+        return counts;
+      }, {});
+      const labels = data.assessments.map(a => {
+        const dateLabel = new Date(a.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (dateCounts[a.date] > 1 && a.submittedAt) {
+          const timeLabel = new Date(a.submittedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          return `${dateLabel}, ${timeLabel}`;
+        }
+        return dateLabel;
+      });
+      const domainConfig = [
+        { key: 'memory', label: 'Memory', color: '#3266ad' },
+        { key: 'attention', label: 'Attention', color: '#eb6834' },
+        { key: 'speed', label: 'Processing Speed', color: '#8b5cf6' },
+        { key: 'language', label: 'Language', color: '#1baf7a' },
+        { key: 'executive', label: 'Executive Function', color: '#d97706' }
+      ];
+
       chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labels,
-          datasets: [
-            { 
-              label: 'Memory', 
-              data: data.assessments.map(a => a.memory), 
-              borderColor: '#3266ad', 
-              backgroundColor: 'rgba(50, 102, 173, 0.05)', 
-              borderWidth: 3, 
-              tension: 0.3, 
-              pointRadius: 5,
-              pointBackgroundColor: '#3266ad',
-              pointBorderColor: 'white',
-              pointBorderWidth: 2
-            },
-            { 
-              label: 'Attention', 
-              data: data.assessments.map(a => a.attention), 
-              borderColor: '#eb6834', 
-              backgroundColor: 'rgba(235, 104, 52, 0.05)', 
-              borderWidth: 3, 
-              tension: 0.3, 
-              pointRadius: 5,
-              pointBackgroundColor: '#eb6834',
-              pointBorderColor: 'white',
-              pointBorderWidth: 2
-            },
-            { 
-              label: 'Language', 
-              data: data.assessments.map(a => a.language), 
-              borderColor: '#1baf7a', 
-              backgroundColor: 'rgba(27, 175, 122, 0.05)', 
-              borderWidth: 3, 
-              tension: 0.3, 
-              pointRadius: 5,
-              pointBackgroundColor: '#1baf7a',
-              pointBorderColor: 'white',
-              pointBorderWidth: 2
-            }
-          ]
+          labels,
+          datasets: domainConfig.map(domain => ({
+            label: domain.label,
+            data: data.assessments.map(a => a[domain.key]),
+            borderColor: domain.color,
+            backgroundColor: domain.color,
+            borderWidth: 2,
+            tension: data.assessments.length > 2 ? 0.25 : 0,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: domain.color,
+            pointBorderColor: 'white',
+            pointBorderWidth: 2,
+            fill: false
+          }))
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: { 
-              display: true, 
+            legend: {
+              display: true,
               position: 'top',
-              labels: { font: { size: 13, weight: 600 } }
-            }
+              labels: { font: { size: 12, weight: 600 }, usePointStyle: true }
+            },
+            tooltip: { enabled: true }
           },
           scales: {
-            y: { 
-              min: 0, 
+            y: {
+              min: 0,
               max: 100,
+              title: { display: true, text: 'Score' },
               grid: { color: 'rgba(0,0,0,0.05)' }
             },
-            x: {
-              grid: { display: false }
-            }
+            x: { grid: { display: false } }
           }
         }
       });
@@ -711,6 +1224,183 @@
       renderUI();
     }
 
+
+
+    function getMedicalHistoryFromForm() {
+      return {
+        patientName: document.getElementById('historyPatientName').value.trim(),
+        age: document.getElementById('historyAge').value.trim(),
+        dob: document.getElementById('historyDob').value,
+        sex: document.getElementById('historySex').value.trim(),
+        bloodType: document.getElementById('historyBloodType').value.trim(),
+        emergencyContact: document.getElementById('historyEmergencyContact').value.trim(),
+        primaryConcern: document.getElementById('historyPrimaryConcern').value.trim(),
+        neurologicalHistory: document.getElementById('historyNeurologicalHistory').value.trim(),
+        conditions: document.getElementById('historyConditions').value.trim(),
+        allergies: document.getElementById('historyAllergies').value.trim(),
+        surgeries: document.getElementById('historySurgeries').value.trim(),
+        hospitalizations: document.getElementById('historyHospitalizations').value.trim(),
+        currentMedications: document.getElementById('historyCurrentMedications').value.trim(),
+        pastMedications: document.getElementById('historyPastMedications').value.trim(),
+        familyHistory: document.getElementById('historyFamilyHistory').value.trim(),
+        lifestyle: document.getElementById('historyLifestyle').value.trim(),
+        notes: document.getElementById('historyNotes').value.trim()
+      };
+    }
+
+    function setMedicalHistoryStatus(message, isError = false) {
+      const status = document.getElementById('medicalHistoryStatus');
+      status.textContent = message;
+      status.style.color = isError ? 'var(--danger)' : 'var(--success)';
+      window.clearTimeout(setMedicalHistoryStatus.timer);
+      setMedicalHistoryStatus.timer = window.setTimeout(() => {
+        status.textContent = '';
+      }, 3500);
+    }
+
+    function saveMedicalHistory() {
+      data.medicalHistory = getMedicalHistoryFromForm();
+      saveData();
+      populateOnboardingForm();
+      renderMedicalHistory();
+      setMedicalHistoryStatus('Medical history saved.');
+    }
+
+    function clearMedicalHistory() {
+      const confirmed = window.confirm('Clear all saved medical history from this browser?');
+      if (!confirmed) return;
+      data.medicalHistory = defaultMedicalHistory();
+      saveData();
+      renderMedicalHistory();
+      setMedicalHistoryStatus('Medical history cleared.');
+    }
+
+    function buildMedicalHistoryText(history) {
+      const rows = [
+        ['Patient Name', history.patientName],
+        ['Age', history.age],
+        ['Date of Birth', history.dob],
+        ['Sex / Gender', history.sex],
+        ['Blood Type', history.bloodType],
+        ['Emergency Contact', history.emergencyContact],
+        ['Primary Cognitive or Neurological Concern', history.primaryConcern],
+        ['Neurological History', history.neurologicalHistory],
+        ['Diagnoses and Current Conditions', history.conditions],
+        ['Allergies and Reactions', history.allergies],
+        ['Surgeries and Procedures', history.surgeries],
+        ['Hospitalizations and Major Events', history.hospitalizations],
+        ['Current Medications', history.currentMedications],
+        ['Past Medications', history.pastMedications],
+        ['Family Medical History', history.familyHistory],
+        ['Lifestyle and Social History', history.lifestyle],
+        ['Other Medical Notes', history.notes]
+      ];
+
+      return rows
+        .filter(([, value]) => value)
+        .map(([label, value]) => `${label}:\n${value}`)
+        .join('\n\n');
+    }
+
+    async function copyMedicalHistory() {
+      const currentHistory = getMedicalHistoryFromForm();
+      const text = buildMedicalHistoryText(currentHistory);
+      if (!text) {
+        setMedicalHistoryStatus('Enter some medical history first.', true);
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        setMedicalHistoryStatus('Medical history copied.');
+      } catch (error) {
+        const temporary = document.createElement('textarea');
+        temporary.value = text;
+        temporary.style.position = 'fixed';
+        temporary.style.opacity = '0';
+        document.body.appendChild(temporary);
+        temporary.select();
+        document.execCommand('copy');
+        temporary.remove();
+        setMedicalHistoryStatus('Medical history copied.');
+      }
+    }
+
+    function renderMedicalHistory() {
+      const history = { ...defaultMedicalHistory(), ...(data.medicalHistory || {}) };
+      const fieldMap = {
+        historyPatientName: 'patientName',
+        historyAge: 'age',
+        historyDob: 'dob',
+        historySex: 'sex',
+        historyBloodType: 'bloodType',
+        historyEmergencyContact: 'emergencyContact',
+        historyPrimaryConcern: 'primaryConcern',
+        historyNeurologicalHistory: 'neurologicalHistory',
+        historyConditions: 'conditions',
+        historyAllergies: 'allergies',
+        historySurgeries: 'surgeries',
+        historyHospitalizations: 'hospitalizations',
+        historyCurrentMedications: 'currentMedications',
+        historyPastMedications: 'pastMedications',
+        historyFamilyHistory: 'familyHistory',
+        historyLifestyle: 'lifestyle',
+        historyNotes: 'notes'
+      };
+
+      Object.entries(fieldMap).forEach(([elementId, key]) => {
+        const element = document.getElementById(elementId);
+        if (element && document.activeElement !== element) element.value = history[key] || '';
+      });
+
+      const summary = document.getElementById('medicalHistorySummary');
+      summary.replaceChildren();
+
+      const rows = [
+        ['Patient Name', history.patientName],
+        ['Age', history.age],
+        ['Date of Birth', history.dob],
+        ['Sex / Gender', history.sex],
+        ['Blood Type', history.bloodType],
+        ['Emergency Contact', history.emergencyContact],
+        ['Primary Cognitive or Neurological Concern', history.primaryConcern],
+        ['Neurological History', history.neurologicalHistory],
+        ['Diagnoses and Current Conditions', history.conditions],
+        ['Allergies and Reactions', history.allergies],
+        ['Surgeries and Procedures', history.surgeries],
+        ['Hospitalizations and Major Events', history.hospitalizations],
+        ['Current Medications', history.currentMedications],
+        ['Past Medications', history.pastMedications],
+        ['Family Medical History', history.familyHistory],
+        ['Lifestyle and Social History', history.lifestyle],
+        ['Other Medical Notes', history.notes]
+      ].filter(([, value]) => value);
+
+      if (rows.length === 0) {
+        const empty = document.createElement('p');
+        empty.style.color = 'var(--text-secondary)';
+        empty.textContent = 'No medical history has been entered yet.';
+        summary.appendChild(empty);
+        return;
+      }
+
+      rows.forEach(([label, value]) => {
+        const item = document.createElement('div');
+        item.className = 'history-summary-item';
+
+        const labelElement = document.createElement('div');
+        labelElement.className = 'history-summary-label';
+        labelElement.textContent = label;
+
+        const valueElement = document.createElement('div');
+        valueElement.className = 'history-summary-value';
+        valueElement.textContent = value;
+
+        item.append(labelElement, valueElement);
+        summary.appendChild(item);
+      });
+    }
+
     function saveAssessment() {
       const date = document.getElementById('assessDate').value || new Date().toISOString().split('T')[0];
       const memory = parseInt(document.getElementById('memoryScore').value);
@@ -718,31 +1408,34 @@
       const speed = parseInt(document.getElementById('processingScore').value);
       const language = parseInt(document.getElementById('languageScore').value);
       const executive = parseInt(document.getElementById('executiveScore').value);
+      const notes = document.getElementById('assessNotes').value.trim();
       
-      data.assessments.push({ date, memory, attention, speed, language, executive });
+      data.assessments.push({ date, memory, attention, speed, language, executive, notes, submittedAt: new Date().toISOString() });
       data.assessments.sort((a, b) => new Date(a.date) - new Date(b.date));
       saveData();
       renderUI();
+      setTimeout(drawChart, 50);
       
-      alert('✅ Assessment saved! Your cognitive profile and risk score have been updated.');
+      alert('✅ Assessment saved! A new point has been added to the graph.');
       document.getElementById('assessNotes').value = '';
     }
 
     function calculateRisk() {
       const lastAssess = data.assessments[data.assessments.length - 1];
-      const attention = lastAssess ? lastAssess.attention : 80;
-      
+      if (!lastAssess) return { risk: null, level: 'unassessed' };
+
+      const attention = lastAssess.attention;
       const isPolytherapy = data.medications.length > 1;
       const avgCognitiveImpact = data.medications.length > 0
         ? data.medications.reduce((sum, m) => sum + m.cognitiveScore, 0) / data.medications.length
         : 0;
-      
+
       let risk = (100 - attention) * 0.6 + avgCognitiveImpact * 4;
       if (isPolytherapy) risk += 20;
-      
+
       risk = Math.min(Math.max(risk, 0), 100);
-      return { 
-        risk: Math.round(risk), 
+      return {
+        risk: Math.round(risk),
         level: risk > 60 ? 'high' : risk > 30 ? 'moderate' : 'low'
       };
     }
@@ -753,6 +1446,14 @@
       const isPolytherapy = data.medications.length > 1;
       
       const recommendations = [];
+
+      if (!lastAssess) {
+        recommendations.push({
+          type: '',
+          text: 'Start by completing your first cognitive assessment. The chart and calculated risk will remain blank until you save real assessment scores.'
+        });
+        return recommendations;
+      }
       
       if (riskData.level === 'low') {
         recommendations.push({
@@ -804,18 +1505,35 @@
 
     function renderUI() {
       const lastAssess = data.assessments[data.assessments.length - 1];
-      const overall = lastAssess 
-        ? Math.round((lastAssess.memory + lastAssess.attention + lastAssess.speed + lastAssess.language + lastAssess.executive) / 5) 
-        : 82;
-      
-      document.getElementById('overallScore').textContent = overall;
+      const overall = lastAssess
+        ? Math.round((lastAssess.memory + lastAssess.attention + lastAssess.speed + lastAssess.language + lastAssess.executive) / 5)
+        : null;
+
+      document.getElementById('overallScore').textContent = overall ?? '—';
+      document.getElementById('overallDelta').textContent = lastAssess ? 'Based on latest assessment' : 'No assessment yet';
       document.getElementById('medCount').textContent = data.medications.length;
-      
+      document.getElementById('medDelta').textContent = data.medications.length === 0
+        ? 'None added'
+        : data.medications.length === 1 ? 'Monotherapy' : 'Polytherapy';
+
       const riskData = calculateRisk();
-      document.getElementById('riskScore').textContent = riskData.risk + '%';
-      const riskBadge = document.querySelector('#medCount').parentElement.querySelector('.risk-badge') || document.createElement('span');
-      riskBadge.className = `risk-badge risk-${riskData.level}`;
-      riskBadge.textContent = riskData.level.toUpperCase();
+      document.getElementById('riskScore').textContent = riskData.risk === null ? '—' : riskData.risk + '%';
+      const riskBadge = document.getElementById('riskBadge');
+      riskBadge.className = riskData.level === 'unassessed'
+        ? 'risk-badge'
+        : `risk-badge risk-${riskData.level}`;
+      riskBadge.textContent = riskData.level === 'unassessed' ? 'Not assessed' : riskData.level.toUpperCase();
+
+      const lastAssessmentValue = document.getElementById('lastAssessmentValue');
+      const lastAssessmentDelta = document.getElementById('lastAssessmentDelta');
+      if (lastAssess) {
+        const assessmentDate = new Date(lastAssess.date + 'T00:00:00');
+        lastAssessmentValue.textContent = assessmentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        lastAssessmentDelta.textContent = data.assessments.length === 1 ? '1 saved assessment' : `${data.assessments.length} saved assessments`;
+      } else {
+        lastAssessmentValue.textContent = 'None';
+        lastAssessmentDelta.textContent = 'Add your first assessment';
+      }
       
       // Medications list
       const medsList = document.getElementById('medsList');
@@ -859,6 +1577,9 @@
           ${rec.text}
         </div>
       `).join('');
+
+      renderMedicalHistory();
+      drawChart();
       
       // Set today's date
       if (!document.getElementById('assessDate').value) {
